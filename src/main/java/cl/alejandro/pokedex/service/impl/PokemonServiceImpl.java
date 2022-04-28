@@ -101,6 +101,7 @@ public class PokemonServiceImpl implements PokemonService {
         EvolutionChainResponse evolutions = getApiClientResponse("evolution-chain/" + chain, EvolutionChainResponse.class);
         result.setEvolutions(evolutions.toString());
 
+        pokemonDetailByName.put(name, result);
         return result;
     }
 
