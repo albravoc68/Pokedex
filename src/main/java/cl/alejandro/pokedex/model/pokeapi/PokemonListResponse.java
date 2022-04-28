@@ -1,4 +1,4 @@
-package cl.alejandro.pokedex.model;
+package cl.alejandro.pokedex.model.pokeapi;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Getter
 @Setter
-public class PokemonList implements Serializable {
+public class PokemonListResponse implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int count;
