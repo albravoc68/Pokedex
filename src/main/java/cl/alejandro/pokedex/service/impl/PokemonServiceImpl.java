@@ -1,6 +1,5 @@
 package cl.alejandro.pokedex.service.impl;
 
-import cl.alejandro.pokedex.exceptions.PokeException;
 import cl.alejandro.pokedex.gateway.PokeApiClient;
 import cl.alejandro.pokedex.model.Pokemon;
 import cl.alejandro.pokedex.model.PokemonDataTable;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,7 +21,6 @@ import java.util.Optional;
 public class PokemonServiceImpl implements PokemonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PokemonServiceImpl.class);
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
     private static final HashMap<String, Pokemon> pokemonByName = new HashMap<>();
     private static final HashMap<String, PokemonDetail> pokemonDetailByName = new HashMap<>();
 
@@ -48,7 +45,7 @@ public class PokemonServiceImpl implements PokemonService {
 
         int offset = (page - 1) * itemsPerPage;
         String endpoint = "pokemon?limit=" + itemsPerPage + "&offset=" + offset;
-        PokemonListResponse listResponse = getApiClientResponse(endpoint, PokemonListResponse.class);
+        PokemonListResponse listResponse = pokeApiClient.getApiClientResponse(endpoint, PokemonListResponse.class);
 
         PokemonDataTable result = new PokemonDataTable();
         result.setCurrentPage(page);
@@ -80,51 +77,41 @@ public class PokemonServiceImpl implements PokemonService {
         } else {
             result.setPokemon(getPokemon(name));
         }
-
-        try {
-            int id = result.getPokemon().getId();
-            CharacteristicResponse characteristic = getApiClientResponse("characteristic/" + id, CharacteristicResponse.class);
-            Optional<CharacteristicResponse.Description> desc = Arrays.stream(characteristic.getDescriptions())
-                    .filter(c -> descLang.equals(c.getLanguage().getName()))
-                    .findFirst();
-            result.setDescription(desc.isPresent() ? desc.get().getDescription() : "Not Found.");
-        } catch (Exception e) {
-            result.setDescription("Not Found in selected language [" + descLang + "]");
-        }
-
-        PokemonSpeciesResponse species = getApiClientResponse("pokemon-species/" + name, PokemonSpeciesResponse.class);
-        String rawChain = species.getEvolutionChain().getUrl()
-                .replace("https://pokeapi.co/api/v2/evolution-chain/", "")
-                .replace("/", "");
-
-        int chain = Integer.parseInt(rawChain);
-        EvolutionChainResponse evolutions = getApiClientResponse("evolution-chain/" + chain, EvolutionChainResponse.class);
-        result.setEvolutions(evolutions.toString());
+        result.setDescription(getDescription(result.getPokemon().getId()));
+        result.setEvolutions(getEvolutions(name));
 
         pokemonDetailByName.put(name, result);
         return result;
     }
 
+    private String getEvolutions(String name) {
+        PokemonSpeciesResponse species = pokeApiClient.getApiClientResponse("pokemon-species/" + name, PokemonSpeciesResponse.class);
+        String rawChain = species.getEvolutionChain().getUrl()
+                .replace("https://pokeapi.co/api/v2/evolution-chain/", "")
+                .replace("/", "");
+
+        int chain = Integer.parseInt(rawChain);
+        EvolutionChainResponse evolutions = pokeApiClient.getApiClientResponse("evolution-chain/" + chain, EvolutionChainResponse.class);
+        return evolutions.toString();
+    }
+
+    private String getDescription(int id) {
+        try {
+            CharacteristicResponse characteristic = pokeApiClient.getApiClientResponse("characteristic/" + id, CharacteristicResponse.class);
+            Optional<CharacteristicResponse.Description> desc = Arrays.stream(characteristic.getDescriptions())
+                    .filter(c -> descLang.equals(c.getLanguage().getName()))
+                    .findFirst();
+            return desc.isPresent() ? desc.get().getDescription() : "Not Found.";
+        } catch (Exception e) {
+            return "Not Found in selected language [" + descLang + "]";
+        }
+    }
+
     private Pokemon getPokemon(String name) {
-        PokemonResponse pokeResponse = getApiClientResponse("pokemon/" + name, PokemonResponse.class);
+        PokemonResponse pokeResponse = pokeApiClient.getApiClientResponse("pokemon/" + name, PokemonResponse.class);
         Pokemon pokemon = new Pokemon(pokeResponse, artworkUrl + pokeResponse.getId() + ".png");
         pokemonByName.put(name, pokemon);
         return pokemon;
-    }
-
-    private <T> T getApiClientResponse(String endpoint, Class<T> returnClass) {
-        try {
-            return pokeApiClient
-                    .getClient()
-                    .get()
-                    .uri(endpoint)
-                    .retrieve()
-                    .bodyToMono(returnClass)
-                    .block(REQUEST_TIMEOUT);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            throw new PokeException("Error connecting to PokeApi.");
-        }
     }
 
 }
