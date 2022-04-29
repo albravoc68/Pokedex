@@ -1,0 +1,69 @@
+{
+	"info": {
+		"_postman_id": "f11d6db1-6983-4dd1-95a0-2a6ae42f8a3d",
+		"name": "Pokedex",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "getPokedex",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://pokedex-env-1.eba-ccyucncw.us-east-1.elasticbeanstalk.com/page?number=1&itemsPerPage=10",
+					"protocol": "http",
+					"host": [
+						"pokedex-env-1",
+						"eba-ccyucncw",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"page"
+					],
+					"query": [
+						{
+							"key": "number",
+							"value": "1"
+						},
+						{
+							"key": "itemsPerPage",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPokemonByName",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://pokedex-env-1.eba-ccyucncw.us-east-1.elasticbeanstalk.com/pokemon?name=bulbasaur",
+					"protocol": "http",
+					"host": [
+						"pokedex-env-1",
+						"eba-ccyucncw",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"pokemon"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "bulbasaur"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
