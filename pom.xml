@@ -14,8 +14,10 @@
     <groupId>cl.alejandro.pokedex</groupId>
     <artifactId>Pokedex</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
 
     <properties>
+        <start-class>cl.alejandro.pokedex.PokedexBootApplication</start-class>
         <java.version>1.8</java.version>
     </properties>
 
@@ -32,6 +34,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Other Dependencies -->
